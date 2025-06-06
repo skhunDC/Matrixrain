@@ -72,14 +72,37 @@ function makeDraggable(el, ignoreSelector) {
         if (ignored.some(i => i === e.target || i.contains(e.target))) {
             return;
         }
-        const rect = el.getBoundingClientRect();
-        // allow browser resize handle to work (bottom-right corner ~20px)
-        if (rect.width - e.offsetX < 20 && rect.height - e.offsetY < 20) {
-            return;
-        }
         offsetX = e.offsetX;
         offsetY = e.offsetY;
         el.style.zIndex = ++zIndexCounter;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+}
+
+function makeResizable(el) {
+    const resizer = document.createElement('div');
+    resizer.className = 'resizer';
+    el.appendChild(resizer);
+
+    let startX, startY, startWidth, startHeight;
+
+    const onMouseMove = e => {
+        el.style.width = startWidth + (e.pageX - startX) + 'px';
+        el.style.height = startHeight + (e.pageY - startY) + 'px';
+    };
+
+    const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    resizer.addEventListener('mousedown', e => {
+        e.stopPropagation();
+        startX = e.pageX;
+        startY = e.pageY;
+        startWidth = parseFloat(getComputedStyle(el).width);
+        startHeight = parseFloat(getComputedStyle(el).height);
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
@@ -93,7 +116,8 @@ addButton.addEventListener('click', () => {
     frame.style.left = '50px';
     frame.style.top = '50px';
     container.appendChild(frame);
-    makeDraggable(frame, '.close, .minimize');
+    makeDraggable(frame, '.close, .minimize, .resizer');
+    makeResizable(frame);
 
     const close = frame.querySelector('.close');
     close.addEventListener('mousedown', e => e.stopPropagation());
