@@ -115,6 +115,12 @@ body, html {
     margin: 0;
     cursor: text;
     user-select: text;
+    outline: none;
+}
+
+/* hide focus outline that appears when editing the title */
+.frame-header .title:focus {
+    outline: none;
 }
 
 .frame .content {
