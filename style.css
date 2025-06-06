@@ -38,10 +38,16 @@ body, html {
 }
 
 #datetime,
-#weather {
+#weather-container {
     width: 25%;
     text-align: center;
     font-size: 1em;
+}
+
+#weather-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #matrix {
@@ -55,10 +61,8 @@ body, html {
 }
 
 #addFrame {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
+    margin-top: 5px;
+    z-index: 10001;
     padding: 8px 12px;
     background: #222;
     color: #0f0;
