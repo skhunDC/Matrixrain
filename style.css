@@ -45,6 +45,8 @@ body, html {
     width: 150px;
     height: auto;
     display: block;
+    position: relative;
+    z-index: 10002;
 }
 
 #title-container {

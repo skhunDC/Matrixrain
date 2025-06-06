@@ -275,7 +275,8 @@ function createFrame(info) {
     }
 
     constrainFrame(frame);
-    makeDraggable(frame, header);
+    // Prevent dragging when clicking the close or minimize buttons
+    makeDraggable(frame, header, '.close, .minimize');
     makeResizable(frame);
 
     if (framesLocked) {
