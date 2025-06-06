@@ -36,7 +36,9 @@ body, html {
 }
 
 #logoImg {
-    display: none;
+    width: 150px;
+    height: auto;
+    display: block;
 }
 
 #logo {
@@ -170,7 +172,7 @@ body, html {
 
 .frame.minimized {
     /* leave a bit more room for the header when minimized */
-    height: 32px;
+    height: 52px;
     overflow: hidden;      /* hide any scrollbars */
 }
 
