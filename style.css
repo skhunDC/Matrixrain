@@ -109,7 +109,9 @@ body, html {
 }
 
 .frame.minimized {
-    height: auto;
+    height: 26px;          /* keep controls visible when minimized */
+    padding: 2px 10px;     /* reduce padding so buttons aren't clipped */
+    overflow: hidden;      /* hide any scrollbars */
 }
 
 .frame.minimized .content {
