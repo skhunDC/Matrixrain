@@ -73,6 +73,39 @@ function updateDateTime() {
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
+const weatherDescriptions = {
+    0: 'Sunny',
+    1: 'Mostly clear',
+    2: 'Partly cloudy',
+    3: 'Cloudy',
+    45: 'Fog',
+    48: 'Fog',
+    51: 'Light drizzle',
+    53: 'Drizzle',
+    55: 'Heavy drizzle',
+    56: 'Freezing drizzle',
+    57: 'Freezing drizzle',
+    61: 'Light rain',
+    63: 'Rain',
+    65: 'Heavy rain',
+    66: 'Freezing rain',
+    67: 'Freezing rain',
+    71: 'Light snow',
+    73: 'Snow',
+    75: 'Heavy snow',
+    77: 'Snow grains',
+    80: 'Rain showers',
+    81: 'Rain showers',
+    82: 'Heavy rain showers',
+    85: 'Snow showers',
+    86: 'Snow showers',
+    95: 'Thunderstorm',
+    96: 'Thunderstorm w/ hail',
+    99: 'Thunderstorm w/ hail'
+};
+
+const dangerousCodes = new Set([65, 66, 67, 75, 82, 86, 95, 96, 99]);
+
 function loadWeather() {
     const url =
         'https://api.open-meteo.com/v1/forecast?latitude=39.9578&longitude=-82.8993&current_weather=true&temperature_unit=fahrenheit';
@@ -81,7 +114,10 @@ function loadWeather() {
         .then(data => {
             if (data && data.current_weather) {
                 const t = Math.round(data.current_weather.temperature);
-                weatherEl.textContent = `${t}\u00B0F`;
+                const code = data.current_weather.weathercode;
+                const desc = weatherDescriptions[code] || 'Unknown';
+                const alert = dangerousCodes.has(code) ? '\u26A0\uFE0F ' : '';
+                weatherEl.textContent = `${alert}${desc} ${t}\u00B0F`;
             } else {
                 weatherEl.textContent = 'N/A';
             }
