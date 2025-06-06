@@ -40,6 +40,7 @@ body, html {
     cursor: move;
     resize: both;
     overflow: auto;
+    z-index: 10;
 }
 
 .frame .close {
@@ -49,4 +50,5 @@ body, html {
     color: red;
     font-weight: bold;
     cursor: pointer;
+    user-select: none;
 }
