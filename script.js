@@ -40,14 +40,19 @@ function startLogoWave() {
         return;
     }
     const ctxL = logoCanvas.getContext('2d');
-    logoCanvas.width = logoImg.naturalWidth;
-    logoCanvas.height = logoImg.naturalHeight;
+    // render at 150px wide for a crisp display
+    const desiredWidth = 150;
+    const scale = desiredWidth / logoImg.naturalWidth;
+    logoCanvas.width = desiredWidth;
+    logoCanvas.height = logoImg.naturalHeight * scale;
+    logoCanvas.style.width = desiredWidth + 'px';
+    logoCanvas.style.height = logoCanvas.height + 'px';
     logoImg.style.display = 'none';
 
     let t = 0;
-    const slice = 2;
-    const waveLength = 40;
-    const amplitude = 5;
+    const slice = 1;           // use 1px slices for higher fidelity
+    const waveLength = 50;     // slightly longer waves
+    const amplitude = 4;       // gentler movement for clarity
 
     function draw() {
         ctxL.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
