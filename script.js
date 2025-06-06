@@ -198,7 +198,7 @@ function createFrame(info) {
     if (info.minimized) frame.classList.add('minimized');
     container.appendChild(frame);
     constrainFrame(frame);
-    makeDraggable(header, '.close, .minimize, .title');
+    makeDraggable(frame, header, '.close, .minimize, .title');
     makeResizable(frame);
 
     const close = frame.querySelector('.close');
@@ -245,17 +245,18 @@ function constrainFrame(el) {
     el.style.top = top + 'px';
 }
 
-function makeDraggable(el, ignoreSelector) {
+function makeDraggable(el, handle, ignoreSelector) {
     let offsetX, offsetY;
-    const ignored = ignoreSelector ? Array.from(el.querySelectorAll(ignoreSelector)) : [];
+    const target = handle || el;
+    const ignored = ignoreSelector ? Array.from(target.querySelectorAll(ignoreSelector)) : [];
 
     const onMouseMove = e => {
         const headerHeight = document.getElementById('header').offsetHeight;
         const maxX = window.innerWidth - el.offsetWidth;
         const maxY = window.innerHeight - el.offsetHeight;
 
-        let newX = e.pageX - offsetX;
-        let newY = e.pageY - offsetY;
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
 
         newX = Math.min(Math.max(0, newX), maxX);
         newY = Math.min(Math.max(headerHeight, newY), maxY);
@@ -270,12 +271,12 @@ function makeDraggable(el, ignoreSelector) {
         saveFrames();
     };
 
-    el.addEventListener('mousedown', e => {
+    target.addEventListener('mousedown', e => {
         if (ignored.some(i => i === e.target || i.contains(e.target))) {
             return;
         }
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
         el.style.zIndex = ++zIndexCounter;
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
