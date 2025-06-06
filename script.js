@@ -3,6 +3,12 @@ const datetimeEl = document.getElementById('datetime');
 const weatherEl = document.getElementById('weather');
 const quoteEl = document.getElementById('weeklyQuote');
 
+const fallbackQuotes = [
+    'The best way to get started is to quit talking and begin doing. — Walt Disney',
+    'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty. — Winston Churchill',
+    'Don\'t let yesterday take up too much of today. — Will Rogers'
+];
+
 
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
@@ -78,7 +84,7 @@ function shouldFetchQuote(lastTime) {
     const diffToMonday = (day + 6) % 7;
     const monday = new Date(est);
     monday.setDate(est.getDate() - diffToMonday);
-    monday.setHours(5, 0, 0, 0);
+    monday.setHours(17, 0, 0, 0);
     if (est < monday) {
         monday.setDate(monday.getDate() - 7);
     }
@@ -101,7 +107,10 @@ function loadWeeklyQuote() {
                 if (saved) {
                     quoteEl.textContent = saved;
                 } else {
-                    quoteEl.textContent = 'Quote unavailable';
+                    const fallback = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+                    quoteEl.textContent = fallback;
+                    localStorage.setItem('weeklyQuote', fallback);
+                    localStorage.setItem('weeklyQuoteTime', Date.now());
                 }
             });
     } else if (saved) {
