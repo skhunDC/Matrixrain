@@ -98,6 +98,69 @@ const container = document.getElementById('framesContainer');
 let frameCount = 0;
 let zIndexCounter = 1;
 
+function saveFrames() {
+    const frames = [];
+    container.querySelectorAll('.frame').forEach(frame => {
+        frames.push({
+            id: frame.dataset.id,
+            left: parseFloat(frame.style.left) || 0,
+            top: parseFloat(frame.style.top) || 0,
+            width: parseFloat(frame.style.width) || 200,
+            height: parseFloat(frame.style.height) || 150,
+            minimized: frame.classList.contains('minimized'),
+            content: frame.querySelector('.content').innerHTML
+        });
+    });
+    localStorage.setItem('framesState', JSON.stringify({ frameCount, frames }));
+}
+
+function loadFrames() {
+    const saved = localStorage.getItem('framesState');
+    if (!saved) return;
+    try {
+        const data = JSON.parse(saved);
+        frameCount = data.frameCount || 0;
+        (data.frames || []).forEach(info => createFrame(info));
+    } catch (e) {
+        console.error('Failed to load frames', e);
+    }
+}
+
+function createFrame(info) {
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    frame.dataset.id = info.id;
+    frame.innerHTML =
+        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="content">${info.content}</div>`;
+    frame.style.left = (info.left || 0) + 'px';
+    frame.style.top = (info.top || 0) + 'px';
+    frame.style.width = (info.width || 200) + 'px';
+    frame.style.height = (info.height || 150) + 'px';
+    if (info.minimized) frame.classList.add('minimized');
+    container.appendChild(frame);
+    constrainFrame(frame);
+    makeDraggable(frame, '.close, .minimize, .resizer');
+    makeResizable(frame);
+
+    const close = frame.querySelector('.close');
+    close.addEventListener('mousedown', e => e.stopPropagation());
+    close.addEventListener('click', e => {
+        e.stopPropagation();
+        frame.remove();
+        saveFrames();
+    });
+
+    const minimize = frame.querySelector('.minimize');
+    minimize.addEventListener('mousedown', e => e.stopPropagation());
+    minimize.addEventListener('click', e => {
+        e.stopPropagation();
+        frame.classList.toggle('minimized');
+        saveFrames();
+    });
+
+    return frame;
+}
+
 function constrainFrame(el) {
     const headerHeight = document.getElementById('header').offsetHeight;
     const maxX = window.innerWidth - el.offsetWidth;
@@ -137,6 +200,7 @@ function makeDraggable(el, ignoreSelector) {
     const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
+        saveFrames();
     };
 
     el.addEventListener('mousedown', e => {
@@ -170,6 +234,7 @@ function makeResizable(el) {
     const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
+        saveFrames();
     };
 
     resizer.addEventListener('mousedown', e => {
@@ -184,28 +249,18 @@ function makeResizable(el) {
 }
 
 addButton.addEventListener('click', () => {
-    const frame = document.createElement('div');
-    frame.className = 'frame';
-    frame.innerHTML =
-        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="content">Frame ${++frameCount}</div>`;
-    frame.style.left = '50px';
-    frame.style.top = '50px';
-    container.appendChild(frame);
-    constrainFrame(frame);
-    makeDraggable(frame, '.close, .minimize, .resizer');
-    makeResizable(frame);
-
-    const close = frame.querySelector('.close');
-    close.addEventListener('mousedown', e => e.stopPropagation());
-    close.addEventListener('click', e => {
-        e.stopPropagation();
-        frame.remove();
-    });
-
-    const minimize = frame.querySelector('.minimize');
-    minimize.addEventListener('mousedown', e => e.stopPropagation());
-    minimize.addEventListener('click', e => {
-        e.stopPropagation();
-        frame.classList.toggle('minimized');
-    });
+    const info = {
+        id: ++frameCount,
+        left: 50,
+        top: 50,
+        width: 200,
+        height: 150,
+        minimized: false,
+        content: `Frame ${frameCount}`
+    };
+    createFrame(info);
+    saveFrames();
 });
+
+// restore any saved frames on load
+loadFrames();
