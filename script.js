@@ -94,6 +94,7 @@ let drops;
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
 let loaderInterval = setInterval(drawLoaderMatrix, speed);
+const minLoadingTime = 2000; // keep loader visible for at least 2s
 // extra pixels to keep frame headers clickable when minimized
 const minimizePadding = 20;
 // Initialize drops based on current window size and update on resize
@@ -583,6 +584,7 @@ function setupSpreadsheet(content) {
 
 function runLoadingSequence() {
     updateProgress(0);
+    const start = Date.now();
     const tasks = [loadWeather(), loadWeeklyQuote(), loadFrames()];
     let done = 0;
     const total = tasks.length;
@@ -592,7 +594,9 @@ function runLoadingSequence() {
             const percent = Math.round((done / total) * 100);
             updateProgress(percent);
             if (done === total) {
-                setTimeout(hideLoader, 300);
+                const elapsed = Date.now() - start;
+                const delay = Math.max(minLoadingTime - elapsed, 0);
+                setTimeout(hideLoader, delay);
             }
         });
     });
