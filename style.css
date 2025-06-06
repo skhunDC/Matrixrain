@@ -37,17 +37,19 @@ body, html {
     font-size: 2em;
 }
 
-#datetime,
 #weather-container {
     width: 25%;
     text-align: center;
     font-size: 1em;
-}
-
-#weather-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#datetime {
+    width: auto;
+    text-align: center;
+    font-size: 1em;
 }
 
 #matrix {
