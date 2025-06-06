@@ -27,6 +27,12 @@ const speed = 80; // milliseconds - a bit faster
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// keep frames within the viewport on resize
+window.addEventListener('resize', () => {
+    const frames = document.querySelectorAll('.frame');
+    frames.forEach(frame => constrainFrame(frame));
+});
+
 function updateDateTime() {
     const now = new Date();
     const options = {
@@ -92,13 +98,40 @@ const container = document.getElementById('framesContainer');
 let frameCount = 0;
 let zIndexCounter = 1;
 
+function constrainFrame(el) {
+    const headerHeight = document.getElementById('header').offsetHeight;
+    const maxX = window.innerWidth - el.offsetWidth;
+    const maxY = window.innerHeight - el.offsetHeight;
+    let left = parseFloat(el.style.left);
+    let top = parseFloat(el.style.top);
+
+    if (isNaN(left)) left = 0;
+    if (isNaN(top)) top = headerHeight;
+
+    left = Math.min(Math.max(0, left), maxX);
+    top = Math.min(Math.max(headerHeight, top), maxY);
+
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+}
+
 function makeDraggable(el, ignoreSelector) {
     let offsetX, offsetY;
     const ignored = ignoreSelector ? Array.from(el.querySelectorAll(ignoreSelector)) : [];
 
     const onMouseMove = e => {
-        el.style.left = e.pageX - offsetX + 'px';
-        el.style.top = e.pageY - offsetY + 'px';
+        const headerHeight = document.getElementById('header').offsetHeight;
+        const maxX = window.innerWidth - el.offsetWidth;
+        const maxY = window.innerHeight - el.offsetHeight;
+
+        let newX = e.pageX - offsetX;
+        let newY = e.pageY - offsetY;
+
+        newX = Math.min(Math.max(0, newX), maxX);
+        newY = Math.min(Math.max(headerHeight, newY), maxY);
+
+        el.style.left = newX + 'px';
+        el.style.top = newY + 'px';
     };
 
     const onMouseUp = () => {
@@ -126,8 +159,12 @@ function makeResizable(el) {
     let startX, startY, startWidth, startHeight;
 
     const onMouseMove = e => {
-        el.style.width = startWidth + (e.pageX - startX) + 'px';
-        el.style.height = startHeight + (e.pageY - startY) + 'px';
+        const maxWidth = window.innerWidth - el.offsetLeft;
+        const maxHeight = window.innerHeight - el.offsetTop;
+        const newWidth = startWidth + (e.pageX - startX);
+        const newHeight = startHeight + (e.pageY - startY);
+        el.style.width = Math.min(newWidth, maxWidth) + 'px';
+        el.style.height = Math.min(newHeight, maxHeight) + 'px';
     };
 
     const onMouseUp = () => {
@@ -154,6 +191,7 @@ addButton.addEventListener('click', () => {
     frame.style.left = '50px';
     frame.style.top = '50px';
     container.appendChild(frame);
+    constrainFrame(frame);
     makeDraggable(frame, '.close, .minimize, .resizer');
     makeResizable(frame);
 
