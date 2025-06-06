@@ -433,11 +433,12 @@ addButton.addEventListener('click', () => {
     } else {
         id = ++frameCount;
     }
+    const frameWidth = 200;
     const info = {
         id,
-        left: 50,
+        left: window.innerWidth - frameWidth - 50,
         top: headerHeight + 10,
-        width: 200,
+        width: frameWidth,
         height: 150,
         minimized: false,
         title: `New Frame ${id}`,
