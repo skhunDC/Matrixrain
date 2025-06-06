@@ -145,8 +145,19 @@ function createFrame(info) {
     const frame = document.createElement('div');
     frame.className = 'frame';
     frame.dataset.id = info.id;
-    frame.innerHTML =
-        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="title" contenteditable="true">${info.title || ''}</div><div class="content">${info.content}</div>`;
+
+    const header = document.createElement('div');
+    header.className = 'frame-header';
+    header.innerHTML =
+        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="title" contenteditable="true">${info.title || ''}</div>`;
+    frame.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = 'content';
+    content.contentEditable = 'true';
+    content.innerHTML = info.content;
+    frame.appendChild(content);
+
     frame.style.left = (info.left || 0) + 'px';
     frame.style.top = (info.top || 0) + 'px';
     frame.style.width = (info.width || 200) + 'px';
@@ -154,7 +165,7 @@ function createFrame(info) {
     if (info.minimized) frame.classList.add('minimized');
     container.appendChild(frame);
     constrainFrame(frame);
-    makeDraggable(frame, '.close, .minimize, .resizer, .title');
+    makeDraggable(header, '.close, .minimize, .title');
     makeResizable(frame);
 
     const close = frame.querySelector('.close');
@@ -168,6 +179,10 @@ function createFrame(info) {
     const title = frame.querySelector('.title');
     title.addEventListener('mousedown', e => e.stopPropagation());
     title.addEventListener('blur', saveFrames);
+
+    const body = frame.querySelector('.content');
+    body.addEventListener('mousedown', e => e.stopPropagation());
+    body.addEventListener('blur', saveFrames);
 
     const minimize = frame.querySelector('.minimize');
     minimize.addEventListener('mousedown', e => e.stopPropagation());
