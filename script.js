@@ -2,9 +2,6 @@
 const datetimeEl = document.getElementById('datetime');
 const weatherEl = document.getElementById('weather');
 
-// Elements for the logo waving effect
-const logoImg = document.getElementById('logoImg');
-const logoCanvas = document.getElementById('logo');
 
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
@@ -32,45 +29,6 @@ const minimizePadding = 20;
 // Initialize drops based on current window size and update on resize
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
-
-// Start the flag style animation on the logo
-function startLogoWave() {
-    if (!logoImg.complete) {
-        logoImg.onload = startLogoWave;
-        return;
-    }
-    const ctxL = logoCanvas.getContext('2d');
-    // render at 150px wide for a crisp display
-    const desiredWidth = 150;
-    const scale = desiredWidth / logoImg.naturalWidth;
-    logoCanvas.width = desiredWidth;
-    logoCanvas.height = logoImg.naturalHeight * scale;
-    logoCanvas.style.width = desiredWidth + 'px';
-    logoCanvas.style.height = logoCanvas.height + 'px';
-    logoImg.style.display = 'none';
-
-    let t = 0;
-    const slice = 1;           // use 1px slices for higher fidelity
-    const waveLength = 50;     // slightly longer waves
-    const amplitude = 4;       // gentler movement for clarity
-
-    function draw() {
-        ctxL.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
-        for (let x = 0; x < logoCanvas.width; x += slice) {
-            const progress = x / logoCanvas.width;
-            const offset = Math.sin((t + x) / waveLength) * amplitude * progress;
-            ctxL.drawImage(
-                logoImg,
-                x, 0, slice, logoCanvas.height,
-                x + offset, 0, slice, logoCanvas.height
-            );
-        }
-        t += 0.5;
-        requestAnimationFrame(draw);
-    }
-    draw();
-}
-startLogoWave();
 
 // keep frames within the viewport on resize
 window.addEventListener('resize', () => {
