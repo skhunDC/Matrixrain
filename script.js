@@ -101,6 +101,10 @@ let zIndexCounter = 1;
 function saveFrames() {
     const frames = [];
     container.querySelectorAll('.frame').forEach(frame => {
+        const contentEl = frame.querySelector('.content');
+        const clone = contentEl.cloneNode(true);
+        const existing = clone.querySelector('.table-controls');
+        if (existing) existing.remove();
         frames.push({
             id: frame.dataset.id,
             left: parseFloat(frame.style.left) || 0,
@@ -109,7 +113,7 @@ function saveFrames() {
             height: parseFloat(frame.dataset.prevHeight || frame.style.height) || 150,
             minimized: frame.classList.contains('minimized'),
             title: frame.querySelector('.title').innerText,
-            content: frame.querySelector('.content').innerHTML
+            content: clone.innerHTML
         });
     });
     const state = { frameCount, frames };
@@ -157,6 +161,8 @@ function createFrame(info) {
     content.className = 'content';
     if (info.content) {
         content.innerHTML = info.content;
+        const existing = content.querySelector('.table-controls');
+        if (existing) existing.remove();
     } else {
         const table = document.createElement('table');
         const thead = document.createElement('thead');
