@@ -220,8 +220,10 @@ function createFrame(info) {
     const close = frame.querySelector('.close');
     close.addEventListener('click', e => {
         e.stopPropagation();
-        frame.remove();
-        saveFrames();
+        if (confirm('ARE YOU SURE YOU WANT TO DELETE THE FRAME?')) {
+            frame.remove();
+            saveFrames();
+        }
     });
 
     const title = frame.querySelector('.title');
