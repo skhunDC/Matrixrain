@@ -460,7 +460,7 @@ loadFrames();
 
 lockButton.addEventListener('click', () => {
     framesLocked = !framesLocked;
-    lockButton.textContent = framesLocked ? 'Unlock Frames' : 'Lock Frames';
+    lockButton.textContent = framesLocked ? '🔓' : '🔒';
     container.querySelectorAll('.frame').forEach(f => {
         if (framesLocked) {
             f.classList.add('locked');
