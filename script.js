@@ -582,6 +582,60 @@ function setupSpreadsheet(content) {
     }, true);
 }
 
+function loadDriveImages(folderId) {
+    const url = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
+    return fetch(url)
+        .then(r => r.text())
+        .then(text => {
+            const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
+            return ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
+        })
+        .catch(err => {
+            console.error('Failed to load drive images', err);
+            return [];
+        });
+}
+
+function createCarouselFrame(folderId) {
+    const headerHeight = document.getElementById('header').offsetHeight;
+    let id;
+    if (availableNumbers.length > 0) {
+        id = availableNumbers.shift();
+    } else {
+        id = ++frameCount;
+    }
+    const frameWidth = 300;
+    const frameHeight = 220;
+    const info = {
+        id,
+        left: 50,
+        top: headerHeight + 10,
+        width: frameWidth,
+        height: frameHeight,
+        minimized: false,
+        title: 'Driver Photos',
+        content: '<div class="carousel"><div class="carousel-inner"></div></div>'
+    };
+    const frame = createFrame(info);
+    const inner = frame.querySelector('.carousel-inner');
+    loadDriveImages(folderId).then(urls => {
+        if (!urls.length) {
+            inner.textContent = 'No images found';
+            return;
+        }
+        const img = document.createElement('img');
+        inner.appendChild(img);
+        let idx = 0;
+        function showNext() {
+            img.src = urls[idx];
+            idx = (idx + 1) % urls.length;
+        }
+        showNext();
+        setInterval(showNext, 3000);
+    });
+    saveFrames();
+}
+
 function runLoadingSequence() {
     updateProgress(0);
     const start = Date.now();
@@ -593,11 +647,16 @@ function runLoadingSequence() {
             done++;
             const percent = Math.round((done / total) * 100);
             updateProgress(percent);
-            if (done === total) {
-                const elapsed = Date.now() - start;
-                const delay = Math.max(minLoadingTime - elapsed, 0);
-                setTimeout(hideLoader, delay);
-            }
+        });
+    });
+    return Promise.allSettled(tasks).then(() => {
+        const elapsed = Date.now() - start;
+        const delay = Math.max(minLoadingTime - elapsed, 0);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                hideLoader();
+                resolve();
+            }, delay);
         });
     });
 }
@@ -625,8 +684,10 @@ addButton.addEventListener('click', () => {
     saveFrames();
 });
 
-// start loading sequence
-runLoadingSequence();
+// start loading sequence and then create carousel frame
+runLoadingSequence().then(() => {
+    createCarouselFrame('1jEnFkdH4tzxbqAB0TiBkb19TM6z5KVaJ');
+});
 
 lockButton.addEventListener('click', () => {
     framesLocked = !framesLocked;
