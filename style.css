@@ -156,6 +156,7 @@ body, html {
     right: 4px;
     color: red;
     font-weight: bold;
+    font-size: 18px;
     cursor: move; /* keep drag cursor for entire header */
     user-select: none;
 }
