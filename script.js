@@ -24,6 +24,53 @@ function formatQuote(text) {
     return text.slice(0, idx) + '<br>' + text.slice(idx + 1).trim();
 }
 
+// Loading overlay elements
+const loader = document.getElementById('loader');
+const progressContainer = document.getElementById('progressContainer');
+const progressBar = document.getElementById('progressBar');
+const loaderCanvas = document.getElementById('loaderCanvas');
+const loaderCtx = loaderCanvas.getContext('2d');
+const loaderText = document.getElementById('loaderText');
+const loaderFontSize = 16;
+let loaderRows;
+let loaderDrops;
+
+function resizeLoaderCanvas() {
+    loaderCanvas.width = progressContainer.offsetWidth;
+    loaderCanvas.height = progressContainer.offsetHeight;
+    loaderRows = Math.floor(loaderCanvas.height / loaderFontSize);
+    loaderDrops = Array(loaderRows).fill(0);
+}
+
+function drawLoaderMatrix() {
+    loaderCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    loaderCtx.fillRect(0, 0, loaderCanvas.width, loaderCanvas.height);
+    loaderCtx.font = loaderFontSize + 'px monospace';
+    for (let i = 0; i < loaderDrops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        const brightness = 50 + Math.random() * 50;
+        loaderCtx.fillStyle = `hsl(120, 100%, ${brightness}%)`;
+        loaderCtx.fillText(text, loaderDrops[i] * loaderFontSize, (i + 1) * loaderFontSize);
+        if (loaderDrops[i] * loaderFontSize > loaderCanvas.width && Math.random() > 0.975) {
+            loaderDrops[i] = 0;
+        }
+        loaderDrops[i]++;
+    }
+}
+
+function updateProgress(percent) {
+    progressBar.style.width = percent + '%';
+    loaderText.textContent = `Loading... ${percent}%`;
+}
+
+function hideLoader() {
+    clearInterval(loaderInterval);
+    loader.style.display = 'none';
+}
+
+resizeLoaderCanvas();
+window.addEventListener('resize', resizeLoaderCanvas);
+
 
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
@@ -46,6 +93,7 @@ let drops;
 
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
+let loaderInterval = setInterval(drawLoaderMatrix, speed);
 // extra pixels to keep frame headers clickable when minimized
 const minimizePadding = 20;
 // Initialize drops based on current window size and update on resize
@@ -109,7 +157,7 @@ const dangerousCodes = new Set([65, 66, 67, 75, 82, 86, 95, 96, 99]);
 function loadWeather() {
     const url =
         'https://api.open-meteo.com/v1/forecast?latitude=39.9578&longitude=-82.8993&current_weather=true&temperature_unit=fahrenheit';
-    fetch(url)
+    return fetch(url)
         .then(r => r.json())
         .then(data => {
             if (data && data.current_weather) {
@@ -126,7 +174,6 @@ function loadWeather() {
             weatherEl.textContent = 'N/A';
         });
 }
-loadWeather();
 
 function shouldFetchQuote(lastTime) {
     const now = new Date();
@@ -146,7 +193,7 @@ function loadWeeklyQuote() {
     const saved = localStorage.getItem('weeklyQuote');
     const savedTime = parseInt(localStorage.getItem('weeklyQuoteTime'), 10);
     if (shouldFetchQuote(savedTime)) {
-        fetch('https://api.quotable.io/random')
+        return fetch('https://api.quotable.io/random')
             .then(r => r.json())
             .then(d => {
                 const text = `${d.content} — ${d.author}`;
@@ -164,12 +211,13 @@ function loadWeeklyQuote() {
                     localStorage.setItem('weeklyQuoteTime', Date.now());
                 }
             });
-    } else if (saved) {
-        quoteEl.innerHTML = formatQuote(saved);
+    } else {
+        if (saved) {
+            quoteEl.innerHTML = formatQuote(saved);
+        }
+        return Promise.resolve();
     }
 }
-
-loadWeeklyQuote();
 
 function drawMatrix() {
     // Slightly darken the entire canvas to create the trail effect
@@ -234,7 +282,7 @@ function saveFrames() {
 }
 
 function loadFrames() {
-    fetch('/frames')
+    return fetch('/frames')
         .then(r => r.json())
         .then(data => {
             frameCount = data.frameCount || 0;
@@ -533,6 +581,23 @@ function setupSpreadsheet(content) {
     }, true);
 }
 
+function runLoadingSequence() {
+    updateProgress(0);
+    const tasks = [loadWeather(), loadWeeklyQuote(), loadFrames()];
+    let done = 0;
+    const total = tasks.length;
+    tasks.forEach(p => {
+        Promise.resolve(p).finally(() => {
+            done++;
+            const percent = Math.round((done / total) * 100);
+            updateProgress(percent);
+            if (done === total) {
+                setTimeout(hideLoader, 300);
+            }
+        });
+    });
+}
+
 addButton.addEventListener('click', () => {
     const headerHeight = document.getElementById('header').offsetHeight;
     let id;
@@ -556,8 +621,8 @@ addButton.addEventListener('click', () => {
     saveFrames();
 });
 
-// restore any saved frames on load
-loadFrames();
+// start loading sequence
+runLoadingSequence();
 
 lockButton.addEventListener('click', () => {
     framesLocked = !framesLocked;
