@@ -27,6 +27,8 @@ let drops;
 
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
+// extra pixels to keep frame headers clickable when minimized
+const minimizePadding = 6;
 // Initialize drops based on current window size and update on resize
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -260,11 +262,13 @@ function createFrame(info) {
     frame.style.top = (info.top || 0) + 'px';
     frame.style.width = (info.width || 200) + 'px';
     frame.style.height = (info.height || 150) + 'px';
-    if (info.minimized) {
-        frame.classList.add('minimized');
-        frame.style.height = header.offsetHeight + 'px';
-    }
     container.appendChild(frame);
+
+    if (info.minimized) {
+        // ensure header height is available before minimizing
+        toggleMinimize(frame);
+    }
+
     constrainFrame(frame);
     makeDraggable(frame, header);
     makeResizable(frame);
@@ -370,7 +374,8 @@ function toggleMinimize(frame) {
         frame.style.height = prev + 'px';
     } else {
         frame.dataset.prevHeight = parseFloat(frame.style.height) || frame.dataset.prevHeight || 150;
-        frame.style.height = headerHeight + 'px';
+        // leave a little extra room so the minimize button remains clickable
+        frame.style.height = (headerHeight + minimizePadding) + 'px';
         frame.classList.add('minimized');
     }
 }
