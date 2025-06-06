@@ -169,7 +169,8 @@ body, html {
 }
 
 .frame.minimized {
-    height: 28px;          /* keep controls visible when minimized */
+    /* leave a bit more room for the header when minimized */
+    height: 32px;
     overflow: hidden;      /* hide any scrollbars */
 }
 
