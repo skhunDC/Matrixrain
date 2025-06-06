@@ -56,7 +56,8 @@ let zIndexCounter = 1;
 
 function makeDraggable(el, ignoreSelector) {
     let offsetX, offsetY;
-    const ignoreEl = ignoreSelector ? el.querySelector(ignoreSelector) : null;
+    const ignored = ignoreSelector ? Array.from(el.querySelectorAll(ignoreSelector)) : [];
+
     const onMouseMove = e => {
         el.style.left = e.pageX - offsetX + 'px';
         el.style.top = e.pageY - offsetY + 'px';
@@ -68,7 +69,12 @@ function makeDraggable(el, ignoreSelector) {
     };
 
     el.addEventListener('mousedown', e => {
-        if (ignoreEl && (e.target === ignoreEl || ignoreEl.contains(e.target))) {
+        if (ignored.some(i => i === e.target || i.contains(e.target))) {
+            return;
+        }
+        const rect = el.getBoundingClientRect();
+        // allow browser resize handle to work (bottom-right corner ~20px)
+        if (rect.width - e.offsetX < 20 && rect.height - e.offsetY < 20) {
             return;
         }
         offsetX = e.offsetX;
@@ -82,16 +88,24 @@ function makeDraggable(el, ignoreSelector) {
 addButton.addEventListener('click', () => {
     const frame = document.createElement('div');
     frame.className = 'frame';
-    frame.innerHTML = `<span class="close">\u2716</span>Frame ${++frameCount}`;
+    frame.innerHTML =
+        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="content">Frame ${++frameCount}</div>`;
     frame.style.left = '50px';
     frame.style.top = '50px';
     container.appendChild(frame);
-    makeDraggable(frame, '.close');
+    makeDraggable(frame, '.close, .minimize');
 
     const close = frame.querySelector('.close');
     close.addEventListener('mousedown', e => e.stopPropagation());
     close.addEventListener('click', e => {
         e.stopPropagation();
         frame.remove();
+    });
+
+    const minimize = frame.querySelector('.minimize');
+    minimize.addEventListener('mousedown', e => e.stopPropagation());
+    minimize.addEventListener('click', e => {
+        e.stopPropagation();
+        frame.classList.toggle('minimized');
     });
 });

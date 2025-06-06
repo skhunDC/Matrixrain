@@ -52,3 +52,22 @@ body, html {
     cursor: pointer;
     user-select: none;
 }
+
+.frame .minimize {
+    position: absolute;
+    top: 2px;
+    right: 20px;
+    color: #0f0;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.frame.minimized {
+    height: auto;
+    resize: none;
+}
+
+.frame.minimized .content {
+    display: none;
+}
