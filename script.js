@@ -97,6 +97,8 @@ const addButton = document.getElementById('addFrame');
 const lockButton = document.getElementById('lockFrames');
 const container = document.getElementById('framesContainer');
 let frameCount = 0;
+// numbers from removed frames that can be reused
+let availableNumbers = [];
 let zIndexCounter = 1;
 let framesLocked = false;
 
@@ -132,7 +134,15 @@ function loadFrames() {
         .then(r => r.json())
         .then(data => {
             frameCount = data.frameCount || 0;
-            (data.frames || []).forEach(info => createFrame(info));
+            const used = new Set();
+            (data.frames || []).forEach(info => {
+                createFrame(info);
+                if (info.id) used.add(parseInt(info.id));
+            });
+            availableNumbers = [];
+            for (let i = 1; i <= frameCount; i++) {
+                if (!used.has(i)) availableNumbers.push(i);
+            }
         })
         .catch(() => {
             const saved = localStorage.getItem('framesState');
@@ -140,7 +150,15 @@ function loadFrames() {
             try {
                 const data = JSON.parse(saved);
                 frameCount = data.frameCount || 0;
-                (data.frames || []).forEach(info => createFrame(info));
+                const used = new Set();
+                (data.frames || []).forEach(info => {
+                    createFrame(info);
+                    if (info.id) used.add(parseInt(info.id));
+                });
+                availableNumbers = [];
+                for (let i = 1; i <= frameCount; i++) {
+                    if (!used.has(i)) availableNumbers.push(i);
+                }
             } catch (e) {
                 console.error('Failed to load frames', e);
             }
@@ -221,7 +239,12 @@ function createFrame(info) {
     close.addEventListener('click', e => {
         e.stopPropagation();
         if (confirm('ARE YOU SURE YOU WANT TO DELETE THE FRAME?')) {
+            const id = parseInt(frame.dataset.id);
             frame.remove();
+            if (!availableNumbers.includes(id)) {
+                availableNumbers.push(id);
+                availableNumbers.sort((a, b) => a - b);
+            }
             saveFrames();
         }
     });
@@ -403,14 +426,21 @@ function setupSpreadsheet(content) {
 }
 
 addButton.addEventListener('click', () => {
+    const headerHeight = document.getElementById('header').offsetHeight;
+    let id;
+    if (availableNumbers.length > 0) {
+        id = availableNumbers.shift();
+    } else {
+        id = ++frameCount;
+    }
     const info = {
-        id: ++frameCount,
+        id,
         left: 50,
-        top: 50,
+        top: headerHeight + 10,
         width: 200,
         height: 150,
         minimized: false,
-        title: `Frame ${frameCount}`,
+        title: `New Frame ${id}`,
         content: ''
     };
     createFrame(info);
