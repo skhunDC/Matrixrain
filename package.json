@@ -1,0 +1,12 @@
+{
+  "name": "matrixrain",
+  "version": "1.0.0",
+  "description": "Matrix rain with editable frames",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
