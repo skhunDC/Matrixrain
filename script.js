@@ -9,6 +9,21 @@ const fallbackQuotes = [
     'Don\'t let yesterday take up too much of today. — Will Rogers'
 ];
 
+function formatQuote(text) {
+    if (text.length <= 120) {
+        return text;
+    }
+    const half = Math.floor(text.length / 2);
+    let idx = text.indexOf(' ', half);
+    if (idx === -1) {
+        idx = text.lastIndexOf(' ', half);
+    }
+    if (idx === -1) {
+        idx = half;
+    }
+    return text.slice(0, idx) + '<br>' + text.slice(idx + 1).trim();
+}
+
 
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
@@ -99,22 +114,22 @@ function loadWeeklyQuote() {
             .then(r => r.json())
             .then(d => {
                 const text = `${d.content} — ${d.author}`;
-                quoteEl.textContent = text;
+                quoteEl.innerHTML = formatQuote(text);
                 localStorage.setItem('weeklyQuote', text);
                 localStorage.setItem('weeklyQuoteTime', Date.now());
             })
             .catch(() => {
                 if (saved) {
-                    quoteEl.textContent = saved;
+                    quoteEl.innerHTML = formatQuote(saved);
                 } else {
                     const fallback = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
-                    quoteEl.textContent = fallback;
+                    quoteEl.innerHTML = formatQuote(fallback);
                     localStorage.setItem('weeklyQuote', fallback);
                     localStorage.setItem('weeklyQuoteTime', Date.now());
                 }
             });
     } else if (saved) {
-        quoteEl.textContent = saved;
+        quoteEl.innerHTML = formatQuote(saved);
     }
 }
 
