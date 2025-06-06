@@ -167,3 +167,31 @@ body, html {
 .frame.minimized .resizer {
     display: none;
 }
+
+.frame table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #0f0;
+}
+
+.frame th,
+.frame td {
+    border: 1px solid #0f0;
+    padding: 2px 4px;
+    min-width: 40px;
+}
+
+.table-controls {
+    margin-top: 5px;
+    text-align: center;
+}
+
+.table-controls button {
+    margin: 0 2px;
+    padding: 2px 6px;
+    background: #222;
+    color: #0f0;
+    border: 1px solid #0f0;
+    cursor: pointer;
+    font-size: 0.8em;
+}

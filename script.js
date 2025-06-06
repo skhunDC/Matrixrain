@@ -154,9 +154,42 @@ function createFrame(info) {
 
     const content = document.createElement('div');
     content.className = 'content';
-    content.contentEditable = 'true';
-    content.innerHTML = info.content;
+    if (info.content) {
+        content.innerHTML = info.content;
+    } else {
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Header 1', 'Header 2'].forEach(text => {
+            const th = document.createElement('th');
+            th.contentEditable = 'true';
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        const row = document.createElement('tr');
+        for (let i = 0; i < 2; i++) {
+            const td = document.createElement('td');
+            td.contentEditable = 'true';
+            row.appendChild(td);
+        }
+        tbody.appendChild(row);
+        table.appendChild(tbody);
+        content.appendChild(table);
+    }
+    const controls = document.createElement('div');
+    controls.className = 'table-controls';
+    controls.innerHTML = `
+        <button class="add-row">Add Row</button>
+        <button class="remove-row">Remove Row</button>
+        <button class="add-col">Add Column</button>
+        <button class="remove-col">Remove Column</button>
+    `;
+    content.appendChild(controls);
     frame.appendChild(content);
+    setupSpreadsheet(content);
 
     frame.style.left = (info.left || 0) + 'px';
     frame.style.top = (info.top || 0) + 'px';
@@ -282,6 +315,59 @@ function makeResizable(el) {
     });
 }
 
+function setupSpreadsheet(content) {
+    const table = content.querySelector('table');
+    const controls = content.querySelector('.table-controls');
+    if (!table || !controls) return;
+
+    const addRowBtn = controls.querySelector('.add-row');
+    const removeRowBtn = controls.querySelector('.remove-row');
+    const addColBtn = controls.querySelector('.add-col');
+    const removeColBtn = controls.querySelector('.remove-col');
+
+    addRowBtn.addEventListener('click', () => {
+        const cols = table.rows[0].cells.length;
+        const row = table.insertRow(-1);
+        for (let i = 0; i < cols; i++) {
+            const cell = row.insertCell(i);
+            cell.contentEditable = 'true';
+        }
+        saveFrames();
+    });
+
+    removeRowBtn.addEventListener('click', () => {
+        if (table.rows.length > 1) {
+            table.deleteRow(-1);
+            saveFrames();
+        }
+    });
+
+    addColBtn.addEventListener('click', () => {
+        for (let i = 0; i < table.rows.length; i++) {
+            const cell = i === 0 ? document.createElement('th') : document.createElement('td');
+            cell.contentEditable = 'true';
+            table.rows[i].appendChild(cell);
+        }
+        saveFrames();
+    });
+
+    removeColBtn.addEventListener('click', () => {
+        const cols = table.rows[0].cells.length;
+        if (cols > 1) {
+            for (let i = 0; i < table.rows.length; i++) {
+                table.rows[i].deleteCell(-1);
+            }
+            saveFrames();
+        }
+    });
+
+    table.addEventListener('blur', e => {
+        if (e.target.tagName === 'TD' || e.target.tagName === 'TH') {
+            saveFrames();
+        }
+    }, true);
+}
+
 addButton.addEventListener('click', () => {
     const info = {
         id: ++frameCount,
@@ -291,7 +377,7 @@ addButton.addEventListener('click', () => {
         height: 150,
         minimized: false,
         title: `Frame ${frameCount}`,
-        content: `Frame ${frameCount}`
+        content: ''
     };
     createFrame(info);
     saveFrames();
