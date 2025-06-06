@@ -1,3 +1,7 @@
+// Header elements
+const datetimeEl = document.getElementById('datetime');
+const weatherEl = document.getElementById('weather');
+
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
@@ -22,6 +26,40 @@ const speed = 80; // milliseconds - a bit faster
 // Initialize drops based on current window size and update on resize
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+
+function updateDateTime() {
+    const now = new Date();
+    const options = {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+    };
+    const date = now.toLocaleDateString('en-US');
+    const time = now.toLocaleTimeString('en-US', options);
+    datetimeEl.textContent = `${date} ${time}`;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+function loadWeather() {
+    const url =
+        'https://api.open-meteo.com/v1/forecast?latitude=39.9578&longitude=-82.8993&current_weather=true&temperature_unit=fahrenheit';
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.current_weather) {
+                const t = Math.round(data.current_weather.temperature);
+                weatherEl.textContent = `${t}\u00B0F`;
+            } else {
+                weatherEl.textContent = 'N/A';
+            }
+        })
+        .catch(() => {
+            weatherEl.textContent = 'N/A';
+        });
+}
+loadWeather();
 
 function drawMatrix() {
     // Slightly darken the entire canvas to create the trail effect
