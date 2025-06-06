@@ -18,7 +18,7 @@ let columns;
 let drops;
 
 // How often the matrix updates. Higher values slow down the animation.
-const speed = 150; // milliseconds
+const speed = 80; // milliseconds - a bit faster
 // Initialize drops based on current window size and update on resize
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -76,9 +76,15 @@ function makeDraggable(el) {
 addButton.addEventListener('click', () => {
     const frame = document.createElement('div');
     frame.className = 'frame';
-    frame.textContent = 'Frame ' + (++frameCount);
+    frame.innerHTML = `<span class="close">\u2716</span>Frame ${++frameCount}`;
     frame.style.left = '50px';
     frame.style.top = '50px';
     container.appendChild(frame);
     makeDraggable(frame);
+
+    const close = frame.querySelector('.close');
+    close.addEventListener('click', e => {
+        e.stopPropagation();
+        frame.remove();
+    });
 });

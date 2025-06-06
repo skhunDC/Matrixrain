@@ -38,4 +38,15 @@ body, html {
     padding: 10px;
     box-sizing: border-box;
     cursor: move;
+    resize: both;
+    overflow: auto;
+}
+
+.frame .close {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
 }
