@@ -236,3 +236,18 @@ body, html {
 .frame.locked .frame-header {
     cursor: default;
 }
+
+#weeklyQuote {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8em;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: 1px solid #0f0;
+    border-radius: 4px;
+    padding: 5px;
+    z-index: 5;
+    max-width: 30%;
+    text-align: right;
+}

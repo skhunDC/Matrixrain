@@ -1,6 +1,7 @@
 // Header elements
 const datetimeEl = document.getElementById('datetime');
 const weatherEl = document.getElementById('weather');
+const quoteEl = document.getElementById('weeklyQuote');
 
 
 // Matrix rain effect
@@ -69,6 +70,46 @@ function loadWeather() {
         });
 }
 loadWeather();
+
+function shouldFetchQuote(lastTime) {
+    const now = new Date();
+    const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const day = est.getDay();
+    const diffToMonday = (day + 6) % 7;
+    const monday = new Date(est);
+    monday.setDate(est.getDate() - diffToMonday);
+    monday.setHours(5, 0, 0, 0);
+    if (est < monday) {
+        monday.setDate(monday.getDate() - 7);
+    }
+    return !lastTime || lastTime < monday.getTime();
+}
+
+function loadWeeklyQuote() {
+    const saved = localStorage.getItem('weeklyQuote');
+    const savedTime = parseInt(localStorage.getItem('weeklyQuoteTime'), 10);
+    if (shouldFetchQuote(savedTime)) {
+        fetch('https://api.quotable.io/random')
+            .then(r => r.json())
+            .then(d => {
+                const text = `${d.content} — ${d.author}`;
+                quoteEl.textContent = text;
+                localStorage.setItem('weeklyQuote', text);
+                localStorage.setItem('weeklyQuoteTime', Date.now());
+            })
+            .catch(() => {
+                if (saved) {
+                    quoteEl.textContent = saved;
+                } else {
+                    quoteEl.textContent = 'Quote unavailable';
+                }
+            });
+    } else if (saved) {
+        quoteEl.textContent = saved;
+    }
+}
+
+loadWeeklyQuote();
 
 function drawMatrix() {
     // Slightly darken the entire canvas to create the trail effect
