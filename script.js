@@ -28,7 +28,7 @@ let drops;
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
 // extra pixels to keep frame headers clickable when minimized
-const minimizePadding = 6;
+const minimizePadding = 20;
 // Initialize drops based on current window size and update on resize
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
