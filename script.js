@@ -106,7 +106,7 @@ function saveFrames() {
             left: parseFloat(frame.style.left) || 0,
             top: parseFloat(frame.style.top) || 0,
             width: parseFloat(frame.style.width) || 200,
-            height: parseFloat(frame.style.height) || 150,
+            height: parseFloat(frame.dataset.prevHeight || frame.style.height) || 150,
             minimized: frame.classList.contains('minimized'),
             title: frame.querySelector('.title').innerText,
             content: frame.querySelector('.content').innerHTML
@@ -145,6 +145,7 @@ function createFrame(info) {
     const frame = document.createElement('div');
     frame.className = 'frame';
     frame.dataset.id = info.id;
+    frame.dataset.prevHeight = info.height || 150;
 
     const header = document.createElement('div');
     header.className = 'frame-header';
@@ -195,7 +196,10 @@ function createFrame(info) {
     frame.style.top = (info.top || 0) + 'px';
     frame.style.width = (info.width || 200) + 'px';
     frame.style.height = (info.height || 150) + 'px';
-    if (info.minimized) frame.classList.add('minimized');
+    if (info.minimized) {
+        frame.classList.add('minimized');
+        frame.style.height = header.offsetHeight + 'px';
+    }
     container.appendChild(frame);
     constrainFrame(frame);
     makeDraggable(frame, header);
@@ -218,7 +222,7 @@ function createFrame(info) {
     const minimize = frame.querySelector('.minimize');
     minimize.addEventListener('click', e => {
         e.stopPropagation();
-        frame.classList.toggle('minimized');
+        toggleMinimize(frame);
         saveFrames();
     });
 
@@ -265,6 +269,7 @@ function makeDraggable(el, handle, ignoreSelector) {
     const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
+        el.dataset.prevHeight = parseFloat(el.style.height);
         saveFrames();
     };
 
@@ -278,6 +283,20 @@ function makeDraggable(el, handle, ignoreSelector) {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
+}
+
+function toggleMinimize(frame) {
+    const header = frame.querySelector('.frame-header');
+    const headerHeight = header ? header.offsetHeight : 0;
+    if (frame.classList.contains('minimized')) {
+        frame.classList.remove('minimized');
+        const prev = frame.dataset.prevHeight || 150;
+        frame.style.height = prev + 'px';
+    } else {
+        frame.dataset.prevHeight = parseFloat(frame.style.height) || frame.dataset.prevHeight || 150;
+        frame.style.height = headerHeight + 'px';
+        frame.classList.add('minimized');
+    }
 }
 
 function makeResizable(el) {
@@ -299,6 +318,7 @@ function makeResizable(el) {
     const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
+        el.dataset.prevHeight = parseFloat(el.style.height);
         saveFrames();
     };
 
