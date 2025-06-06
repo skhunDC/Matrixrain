@@ -123,6 +123,19 @@ body, html {
     font-size: 18px;
 }
 
+.frame .title {
+    display: block;
+    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 4px;
+    cursor: text;
+    user-select: text;
+}
+
+.frame.minimized .title {
+    margin-top: 0;
+}
+
 .frame.minimized {
     height: 26px;          /* keep controls visible when minimized */
     padding: 2px 10px;     /* reduce padding so buttons aren't clipped */

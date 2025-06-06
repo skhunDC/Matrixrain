@@ -108,22 +108,37 @@ function saveFrames() {
             width: parseFloat(frame.style.width) || 200,
             height: parseFloat(frame.style.height) || 150,
             minimized: frame.classList.contains('minimized'),
+            title: frame.querySelector('.title').innerText,
             content: frame.querySelector('.content').innerHTML
         });
     });
-    localStorage.setItem('framesState', JSON.stringify({ frameCount, frames }));
+    const state = { frameCount, frames };
+    localStorage.setItem('framesState', JSON.stringify(state));
+    fetch('/frames', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+    }).catch(err => console.error('Failed to save frames', err));
 }
 
 function loadFrames() {
-    const saved = localStorage.getItem('framesState');
-    if (!saved) return;
-    try {
-        const data = JSON.parse(saved);
-        frameCount = data.frameCount || 0;
-        (data.frames || []).forEach(info => createFrame(info));
-    } catch (e) {
-        console.error('Failed to load frames', e);
-    }
+    fetch('/frames')
+        .then(r => r.json())
+        .then(data => {
+            frameCount = data.frameCount || 0;
+            (data.frames || []).forEach(info => createFrame(info));
+        })
+        .catch(() => {
+            const saved = localStorage.getItem('framesState');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                frameCount = data.frameCount || 0;
+                (data.frames || []).forEach(info => createFrame(info));
+            } catch (e) {
+                console.error('Failed to load frames', e);
+            }
+        });
 }
 
 function createFrame(info) {
@@ -131,7 +146,7 @@ function createFrame(info) {
     frame.className = 'frame';
     frame.dataset.id = info.id;
     frame.innerHTML =
-        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="content">${info.content}</div>`;
+        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="title" contenteditable="true">${info.title || ''}</div><div class="content">${info.content}</div>`;
     frame.style.left = (info.left || 0) + 'px';
     frame.style.top = (info.top || 0) + 'px';
     frame.style.width = (info.width || 200) + 'px';
@@ -139,7 +154,7 @@ function createFrame(info) {
     if (info.minimized) frame.classList.add('minimized');
     container.appendChild(frame);
     constrainFrame(frame);
-    makeDraggable(frame, '.close, .minimize, .resizer');
+    makeDraggable(frame, '.close, .minimize, .resizer, .title');
     makeResizable(frame);
 
     const close = frame.querySelector('.close');
@@ -149,6 +164,10 @@ function createFrame(info) {
         frame.remove();
         saveFrames();
     });
+
+    const title = frame.querySelector('.title');
+    title.addEventListener('mousedown', e => e.stopPropagation());
+    title.addEventListener('blur', saveFrames);
 
     const minimize = frame.querySelector('.minimize');
     minimize.addEventListener('mousedown', e => e.stopPropagation());
@@ -256,6 +275,7 @@ addButton.addEventListener('click', () => {
         width: 200,
         height: 150,
         minimized: false,
+        title: `Frame ${frameCount}`,
         content: `Frame ${frameCount}`
     };
     createFrame(info);
