@@ -52,9 +52,11 @@ setInterval(drawMatrix, speed);
 const addButton = document.getElementById('addFrame');
 const container = document.getElementById('framesContainer');
 let frameCount = 0;
+let zIndexCounter = 1;
 
-function makeDraggable(el) {
+function makeDraggable(el, ignoreSelector) {
     let offsetX, offsetY;
+    const ignoreEl = ignoreSelector ? el.querySelector(ignoreSelector) : null;
     const onMouseMove = e => {
         el.style.left = e.pageX - offsetX + 'px';
         el.style.top = e.pageY - offsetY + 'px';
@@ -66,8 +68,12 @@ function makeDraggable(el) {
     };
 
     el.addEventListener('mousedown', e => {
+        if (ignoreEl && (e.target === ignoreEl || ignoreEl.contains(e.target))) {
+            return;
+        }
         offsetX = e.offsetX;
         offsetY = e.offsetY;
+        el.style.zIndex = ++zIndexCounter;
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
@@ -80,9 +86,10 @@ addButton.addEventListener('click', () => {
     frame.style.left = '50px';
     frame.style.top = '50px';
     container.appendChild(frame);
-    makeDraggable(frame);
+    makeDraggable(frame, '.close');
 
     const close = frame.querySelector('.close');
+    close.addEventListener('mousedown', e => e.stopPropagation());
     close.addEventListener('click', e => {
         e.stopPropagation();
         frame.remove();
