@@ -198,11 +198,10 @@ function createFrame(info) {
     if (info.minimized) frame.classList.add('minimized');
     container.appendChild(frame);
     constrainFrame(frame);
-    makeDraggable(frame, header, '.close, .minimize, .title');
+    makeDraggable(frame, header);
     makeResizable(frame);
 
     const close = frame.querySelector('.close');
-    close.addEventListener('mousedown', e => e.stopPropagation());
     close.addEventListener('click', e => {
         e.stopPropagation();
         frame.remove();
@@ -210,7 +209,6 @@ function createFrame(info) {
     });
 
     const title = frame.querySelector('.title');
-    title.addEventListener('mousedown', e => e.stopPropagation());
     title.addEventListener('blur', saveFrames);
 
     const body = frame.querySelector('.content');
@@ -218,7 +216,6 @@ function createFrame(info) {
     body.addEventListener('blur', saveFrames);
 
     const minimize = frame.querySelector('.minimize');
-    minimize.addEventListener('mousedown', e => e.stopPropagation());
     minimize.addEventListener('click', e => {
         e.stopPropagation();
         frame.classList.toggle('minimized');
