@@ -1,18 +1,27 @@
 // Matrix rain effect
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+
+// Set canvas size based on the window and keep it updated
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array(columns).fill(1);
+}
 
 // Character set with a mix of latin and katakana symbols for a more "Matrix" feel
 const letters =
   'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const fontSize = 16;
-const columns = Math.floor(canvas.width / fontSize);
-const drops = Array(columns).fill(1);
+let columns;
+let drops;
 
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 150; // milliseconds
+// Initialize drops based on current window size and update on resize
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 function drawMatrix() {
     // Slightly darken the entire canvas to create the trail effect
