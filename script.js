@@ -94,9 +94,11 @@ setInterval(drawMatrix, speed);
 
 // Movable frames
 const addButton = document.getElementById('addFrame');
+const lockButton = document.getElementById('lockFrames');
 const container = document.getElementById('framesContainer');
 let frameCount = 0;
 let zIndexCounter = 1;
+let framesLocked = false;
 
 function saveFrames() {
     const frames = [];
@@ -211,6 +213,10 @@ function createFrame(info) {
     makeDraggable(frame, header);
     makeResizable(frame);
 
+    if (framesLocked) {
+        frame.classList.add('locked');
+    }
+
     const close = frame.querySelector('.close');
     close.addEventListener('click', e => {
         e.stopPropagation();
@@ -280,6 +286,7 @@ function makeDraggable(el, handle, ignoreSelector) {
     };
 
     target.addEventListener('mousedown', e => {
+        if (framesLocked) return;
         if (ignored.some(i => i === e.target || i.contains(e.target))) {
             return;
         }
@@ -329,6 +336,7 @@ function makeResizable(el) {
     };
 
     resizer.addEventListener('mousedown', e => {
+        if (framesLocked) return;
         e.stopPropagation();
         startX = e.pageX;
         startY = e.pageY;
@@ -409,3 +417,15 @@ addButton.addEventListener('click', () => {
 
 // restore any saved frames on load
 loadFrames();
+
+lockButton.addEventListener('click', () => {
+    framesLocked = !framesLocked;
+    lockButton.textContent = framesLocked ? 'Unlock Frames' : 'Lock Frames';
+    container.querySelectorAll('.frame').forEach(f => {
+        if (framesLocked) {
+            f.classList.add('locked');
+        } else {
+            f.classList.remove('locked');
+        }
+    });
+});
