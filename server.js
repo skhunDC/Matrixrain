@@ -9,22 +9,17 @@ const saveFile = path.join(__dirname, 'frames.json');
 app.use(express.json());
 app.use(express.static(__dirname));
 
-app.get('/drive-images', async (req, res) => {
-  const folderId = req.query.folderId;
-  if (!folderId) {
-    return res.status(400).json({ message: 'Missing folderId' });
-  }
-  try {
-    const url = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
-    const response = await fetch(url);
-    const text = await response.text();
-    const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
-    const images = ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
+app.get('/images', (req, res) => {
+  fs.readdir(__dirname, (err, files) => {
+    if (err) {
+      console.error('Failed to read images', err);
+      return res.json({ images: [] });
+    }
+    const images = files
+      .filter(f => f.toLowerCase().endsWith('.png'))
+      .map(f => encodeURI(`/${f}`));
     res.json({ images });
-  } catch (err) {
-    console.error('Failed to fetch drive images', err);
-    res.json({ images: [] });
-  }
+  });
 });
 
 app.get('/frames', (req, res) => {
