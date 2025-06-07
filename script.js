@@ -318,7 +318,7 @@ function loadFrames() {
         });
 }
 
-function createFrame(info) {
+function createFrame(info, disableControls = false) {
     const frame = document.createElement('div');
     frame.className = 'frame';
     frame.dataset.id = info.id;
@@ -359,17 +359,19 @@ function createFrame(info) {
         table.appendChild(tbody);
         content.appendChild(table);
     }
-    const controls = document.createElement('div');
-    controls.className = 'table-controls';
-    controls.innerHTML = `
-        <button class="add-row">Add Row</button>
-        <button class="remove-row">Remove Row</button>
-        <button class="add-col">Add Column</button>
-        <button class="remove-col">Remove Column</button>
-    `;
-    content.appendChild(controls);
+    if (!disableControls) {
+        const controls = document.createElement('div');
+        controls.className = 'table-controls';
+        controls.innerHTML = `
+            <button class="add-row">Add Row</button>
+            <button class="remove-row">Remove Row</button>
+            <button class="add-col">Add Column</button>
+            <button class="remove-col">Remove Column</button>
+        `;
+        content.appendChild(controls);
+        setupSpreadsheet(content);
+    }
     frame.appendChild(content);
-    setupSpreadsheet(content);
 
     frame.style.left = (info.left || 0) + 'px';
     frame.style.top = (info.top || 0) + 'px';
@@ -593,7 +595,17 @@ function loadDriveImages(folderId) {
         });
 }
 
-function createCarouselFrame(folderId) {
+function loadLocalImages() {
+    return fetch('/local-images')
+        .then(r => r.json())
+        .then(data => data.images || [])
+        .catch(err => {
+            console.error('Failed to load local images', err);
+            return [];
+        });
+}
+
+function createCarouselFrame() {
     const headerHeight = document.getElementById('header').offsetHeight;
     let id;
     if (availableNumbers.length > 0) {
@@ -613,9 +625,9 @@ function createCarouselFrame(folderId) {
         title: 'Driver Photos',
         content: '<div class="carousel"><div class="carousel-inner"></div></div>'
     };
-    const frame = createFrame(info);
+    const frame = createFrame(info, true);
     const inner = frame.querySelector('.carousel-inner');
-    loadDriveImages(folderId).then(urls => {
+    loadLocalImages().then(urls => {
         if (!urls.length) {
             inner.textContent = 'No images found';
             return;
@@ -684,7 +696,7 @@ addButton.addEventListener('click', () => {
 // start loading sequence and create carousel frame only if one isn't loaded
 runLoadingSequence().then(() => {
     if (!container.querySelector('.carousel')) {
-        createCarouselFrame('1jEnFkdH4tzxbqAB0TiBkb19TM6z5KVaJ');
+        createCarouselFrame();
     }
 });
 
