@@ -359,15 +359,7 @@ function createFrame(info, disableControls = false) {
         table.appendChild(tbody);
         content.appendChild(table);
     }
-// ————— driver-photo frame cleanup —————
-const leftover = frame.querySelector('.table-controls');
-if (leftover) leftover.remove();
-
-// … other code …
-
-// make every file path safe for URLs
-.map(f => '/' + encodeURIComponent(f));
-
+    if (!disableControls) {
         const controls = document.createElement('div');
         controls.className = 'table-controls';
         controls.innerHTML = `
@@ -592,6 +584,17 @@ function setupSpreadsheet(content) {
     }, true);
 }
 
+function loadDriveImages(folderId) {
+    const url = `/drive-images?folderId=${folderId}`;
+    return fetch(url)
+        .then(r => r.json())
+        .then(data => data.images || [])
+        .catch(err => {
+            console.error('Failed to load drive images', err);
+            return [];
+        });
+}
+
 function loadLocalImages() {
     return fetch('/local-images')
         .then(r => r.json())
@@ -601,15 +604,6 @@ function loadLocalImages() {
             return [];
         });
 }
-
-// ————— driver-photo frame cleanup —————
-const leftover = frame.querySelector('.table-controls');
-if (leftover) leftover.remove();
-
-// … other code …
-
-// make every file path safe for URLs
-.map(f => '/' + encodeURIComponent(f));
 
 function createCarouselFrame() {
     const headerHeight = document.getElementById('header').offsetHeight;
