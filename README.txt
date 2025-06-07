@@ -4,11 +4,12 @@ This small project renders a Matrix style "digital rain" animation on an HTML ca
 
 The page also includes movable frames. You can change a frame's title by clicking on it. Layout and titles are saved to `frames.json` on the server and restored when the page loads.
 
-To run the site with persistence enabled, install dependencies and start the server:
+The built-in Node server has no dependencies. Start it with:
 
 ```
-npm install
 npm start
 ```
 
 Open `http://localhost:3000` in your browser to see the matrix rain animation. Frames can be moved, resized, minimized with the green underscore, and removed with the red **X** in their corner. When removing a frame you will be asked to confirm the deletion. Layout is saved server side so it persists across browsers.
+
+The Driver Photos frame automatically cycles through `.png` images found in the project directory.
