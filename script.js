@@ -583,13 +583,10 @@ function setupSpreadsheet(content) {
 }
 
 function loadDriveImages(folderId) {
-    const url = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
+    const url = `/drive-images?folderId=${folderId}`;
     return fetch(url)
-        .then(r => r.text())
-        .then(text => {
-            const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
-            return ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
-        })
+        .then(r => r.json())
+        .then(data => data.images || [])
         .catch(err => {
             console.error('Failed to load drive images', err);
             return [];
