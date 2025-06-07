@@ -627,8 +627,6 @@ function createCarouselFrame() {
     };
     const frame = createFrame(info, true);
     const inner = frame.querySelector('.carousel-inner');
-    const leftover = frame.querySelector('.table-controls');
-    if (leftover) leftover.remove();
     loadLocalImages().then(urls => {
         if (!urls.length) {
             inner.textContent = 'No images found';
