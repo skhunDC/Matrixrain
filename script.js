@@ -681,9 +681,11 @@ addButton.addEventListener('click', () => {
     saveFrames();
 });
 
-// start loading sequence and then create carousel frame
+// start loading sequence and create carousel frame only if one isn't loaded
 runLoadingSequence().then(() => {
-    createCarouselFrame('1jEnFkdH4tzxbqAB0TiBkb19TM6z5KVaJ');
+    if (!container.querySelector('.carousel')) {
+        createCarouselFrame('1jEnFkdH4tzxbqAB0TiBkb19TM6z5KVaJ');
+    }
 });
 
 lockButton.addEventListener('click', () => {
