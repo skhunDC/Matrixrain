@@ -95,8 +95,8 @@ let drops;
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
 let loaderInterval = setInterval(drawLoaderMatrix, speed);
-const minLoadingTime = 2000; // keep loader visible for at least 2s
-const progressDuration = 1000; // progress bar animation time
+const minLoadingTime = 3000; // keep loader visible for at least 3s
+const progressDuration = 100; // wait for final bar transition
 let lastProgressTime = Date.now();
 // extra pixels to keep frame headers clickable when minimized
 const minimizePadding = 20;
@@ -651,21 +651,22 @@ function createCarouselFrame() {
 function runLoadingSequence() {
     updateProgress(0);
     const start = Date.now();
+    const progressInterval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const percent = Math.min(100, Math.round((elapsed / minLoadingTime) * 100));
+        updateProgress(percent);
+        if (percent === 100) {
+            clearInterval(progressInterval);
+        }
+    }, 50);
+
     const tasks = [loadWeather(), loadWeeklyQuote(), loadFrames()];
-    let done = 0;
-    const total = tasks.length;
-    tasks.forEach(p => {
-        Promise.resolve(p).finally(() => {
-            done++;
-            const percent = Math.round((done / total) * 100);
-            updateProgress(percent);
-        });
-    });
     return Promise.allSettled(tasks).then(() => {
         const elapsed = Date.now() - start;
         const delay = Math.max(minLoadingTime - elapsed, 0);
         return new Promise(resolve => {
             setTimeout(() => {
+                clearInterval(progressInterval);
                 if (parseInt(progressBar.style.width) < 100) {
                     updateProgress(100);
                 }
