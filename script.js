@@ -359,8 +359,15 @@ function createFrame(info, disableControls = false) {
         table.appendChild(tbody);
         content.appendChild(table);
     }
-    const tableEl = content.querySelector('table');
-    if (!disableControls && tableEl) {
+// ————— driver-photo frame cleanup —————
+const leftover = frame.querySelector('.table-controls');
+if (leftover) leftover.remove();
+
+// … other code …
+
+// make every file path safe for URLs
+.map(f => '/' + encodeURIComponent(f));
+
         const controls = document.createElement('div');
         controls.className = 'table-controls';
         controls.innerHTML = `
@@ -594,6 +601,15 @@ function loadLocalImages() {
             return [];
         });
 }
+
+// ————— driver-photo frame cleanup —————
+const leftover = frame.querySelector('.table-controls');
+if (leftover) leftover.remove();
+
+// … other code …
+
+// make every file path safe for URLs
+.map(f => '/' + encodeURIComponent(f));
 
 function createCarouselFrame() {
     const headerHeight = document.getElementById('header').offsetHeight;

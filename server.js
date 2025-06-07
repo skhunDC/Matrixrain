@@ -16,10 +16,15 @@ const mimeTypes = {
   '.txt': 'text/plain'
 };
 
-function sendJson(res, obj, status = 200) {
-  res.writeHead(status, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(obj));
-}
+// ————— driver-photo frame cleanup —————
+const leftover = frame.querySelector('.table-controls');
+if (leftover) leftover.remove();
+
+// … other code …
+
+// make every file path safe for URLs
+.map(f => '/' + encodeURIComponent(f));
+
 
 function serveStatic(res, filePath) {
   fs.readFile(filePath, (err, data) => {
