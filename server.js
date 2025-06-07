@@ -9,6 +9,19 @@ const saveFile = path.join(__dirname, 'frames.json');
 app.use(express.json());
 app.use(express.static(__dirname));
 
+app.get('/local-images', (req, res) => {
+  fs.readdir(__dirname, (err, files) => {
+    if (err) {
+      console.error('Failed to read directory', err);
+      return res.json({ images: [] });
+    }
+    const images = files
+      .filter(f => /\.png$/i.test(f))
+      .map(f => '/' + f);
+    res.json({ images });
+  });
+});
+
 app.get('/drive-images', async (req, res) => {
   const folderId = req.query.folderId;
   if (!folderId) {
