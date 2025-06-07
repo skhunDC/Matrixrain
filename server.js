@@ -5,19 +5,21 @@ const path = require('path');
 const app = express();
 const port = 3000;
 const saveFile = path.join(__dirname, 'frames.json');
+const publicDir = path.join(__dirname, 'public');
+const imagesDir = path.join(publicDir, 'images');
 
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(publicDir));
 
 app.get('/images', (req, res) => {
-  fs.readdir(__dirname, (err, files) => {
+  fs.readdir(imagesDir, (err, files) => {
     if (err) {
       console.error('Failed to read images', err);
       return res.json({ images: [] });
     }
     const images = files
       .filter(f => f.toLowerCase().endsWith('.png'))
-      .map(f => encodeURI(`/${f}`));
+      .map(f => encodeURI(`/images/${f}`));
     res.json({ images });
   });
 });
@@ -45,4 +47,8 @@ app.post('/frames', (req, res) => {
   });
 });
 
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+if (require.main === module) {
+  app.listen(port, () => console.log(`Server listening on port ${port}`));
+}
+
+module.exports = app;

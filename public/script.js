@@ -64,7 +64,7 @@ function updateProgress(percent) {
 }
 
 function hideLoader() {
-    clearInterval(loaderInterval);
+    cancelAnimationFrame(loaderAnim);
     loader.style.display = 'none';
 }
 
@@ -93,7 +93,15 @@ let drops;
 
 // How often the matrix updates. Higher values slow down the animation.
 const speed = 80; // milliseconds - a bit faster
-let loaderInterval = setInterval(drawLoaderMatrix, speed);
+let loaderLast = 0;
+function animateLoader(ts) {
+    if (ts - loaderLast >= speed) {
+        drawLoaderMatrix();
+        loaderLast = ts;
+    }
+    loaderAnim = requestAnimationFrame(animateLoader);
+}
+let loaderAnim = requestAnimationFrame(animateLoader);
 const minLoadingTime = 2000; // keep loader visible for at least 2s
 // extra pixels to keep frame headers clickable when minimized
 const minimizePadding = 20;
@@ -242,8 +250,18 @@ function drawMatrix() {
     }
 }
 
-// Slow down the interval for a calmer rain effect
-setInterval(drawMatrix, speed);
+function startMatrix() {
+    let last = 0;
+    function frame(ts) {
+        if (ts - last >= speed) {
+            drawMatrix();
+            last = ts;
+        }
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+startMatrix();
 
 // Movable frames
 const addButton = document.getElementById('addFrame');
