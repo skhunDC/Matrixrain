@@ -344,8 +344,9 @@ function createFrame(info) {
 
     const header = document.createElement('div');
     header.className = 'frame-header';
+    const closeHtml = info.noClose ? '' : '<span class="close">\u2716</span>';
     header.innerHTML =
-        `<span class="close">\u2716</span><span class="minimize">&#95;</span><div class="title" contenteditable="true">${info.title || ''}</div>`;
+        `${closeHtml}<span class="minimize">&#95;</span><div class="title" contenteditable="true">${info.title || ''}</div>`;
     frame.appendChild(header);
 
     const content = document.createElement('div');
@@ -377,17 +378,26 @@ function createFrame(info) {
         table.appendChild(tbody);
         content.appendChild(table);
     }
-    const controls = document.createElement('div');
-    controls.className = 'table-controls';
-    controls.innerHTML = `
-        <button class="add-row">Add Row</button>
-        <button class="remove-row">Remove Row</button>
-        <button class="add-col">Add Column</button>
-        <button class="remove-col">Remove Column</button>
-    `;
-    content.appendChild(controls);
+    if (!info.noControls) {
+        const controls = document.createElement('div');
+        controls.className = 'table-controls';
+        controls.innerHTML = `
+            <button class="add-row">Add Row</button>
+            <button class="remove-row">Remove Row</button>
+            <button class="add-col">Add Column</button>
+            <button class="remove-col">Remove Column</button>
+        `;
+        content.appendChild(controls);
+    }
     frame.appendChild(content);
     setupSpreadsheet(content);
+
+    if (content.querySelector('.carousel')) {
+        const ctrl = frame.querySelector('.table-controls');
+        if (ctrl) ctrl.remove();
+        const closeBtn = frame.querySelector('.close');
+        if (closeBtn) closeBtn.remove();
+    }
 
     frame.style.left = (info.left || 0) + 'px';
     frame.style.top = (info.top || 0) + 'px';
@@ -410,18 +420,20 @@ function createFrame(info) {
     }
 
     const close = frame.querySelector('.close');
-    close.addEventListener('click', e => {
-        e.stopPropagation();
-        if (confirm('ARE YOU SURE YOU WANT TO DELETE THE FRAME?')) {
-            const id = parseInt(frame.dataset.id);
-            frame.remove();
-            if (!availableNumbers.includes(id)) {
-                availableNumbers.push(id);
-                availableNumbers.sort((a, b) => a - b);
+    if (close) {
+        close.addEventListener('click', e => {
+            e.stopPropagation();
+            if (confirm('ARE YOU SURE YOU WANT TO DELETE THE FRAME?')) {
+                const id = parseInt(frame.dataset.id);
+                frame.remove();
+                if (!availableNumbers.includes(id)) {
+                    availableNumbers.push(id);
+                    availableNumbers.sort((a, b) => a - b);
+                }
+                saveFrames();
             }
-            saveFrames();
-        }
-    });
+        });
+    }
 
     const title = frame.querySelector('.title');
     title.addEventListener('blur', saveFrames);
@@ -628,7 +640,9 @@ function createCarouselFrame() {
         height: frameHeight,
         minimized: false,
         title: 'Driver Photos',
-        content: '<div class="carousel"><div class="carousel-inner"></div></div>'
+        content: '<div class="carousel"><div class="carousel-inner"></div></div>',
+        noControls: true,
+        noClose: true
     };
     const frame = createFrame(info);
     const inner = frame.querySelector('.carousel-inner');
