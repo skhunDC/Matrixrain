@@ -359,7 +359,8 @@ function createFrame(info, disableControls = false) {
         table.appendChild(tbody);
         content.appendChild(table);
     }
-    if (!disableControls) {
+    const tableEl = content.querySelector('table');
+    if (!disableControls && tableEl) {
         const controls = document.createElement('div');
         controls.className = 'table-controls';
         controls.innerHTML = `

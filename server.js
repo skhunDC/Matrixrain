@@ -1,66 +1,117 @@
-const express = require('express');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 
-const app = express();
 const port = 3000;
-const saveFile = path.join(__dirname, 'frames.json');
+const root = __dirname;
+const saveFile = path.join(root, 'frames.json');
 
-app.use(express.json());
-app.use(express.static(__dirname));
+const mimeTypes = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'text/javascript',
+  '.png': 'image/png',
+  '.json': 'application/json',
+  '.txt': 'text/plain'
+};
 
-app.get('/local-images', (req, res) => {
-  fs.readdir(__dirname, (err, files) => {
+function sendJson(res, obj, status = 200) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(obj));
+}
+
+function serveStatic(res, filePath) {
+  fs.readFile(filePath, (err, data) => {
     if (err) {
-      console.error('Failed to read directory', err);
-      return res.json({ images: [] });
+      res.writeHead(404);
+      res.end('Not Found');
+      return;
     }
-    const images = files
-      .filter(f => /\.png$/i.test(f))
-      .map(f => '/' + f);
-    res.json({ images });
+    const ext = path.extname(filePath).toLowerCase();
+    const type = mimeTypes[ext] || 'application/octet-stream';
+    res.writeHead(200, { 'Content-Type': type });
+    res.end(data);
   });
-});
+}
 
-app.get('/drive-images', async (req, res) => {
-  const folderId = req.query.folderId;
-  if (!folderId) {
-    return res.status(400).json({ message: 'Missing folderId' });
-  }
-  try {
-    const url = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
-    const response = await fetch(url);
-    const text = await response.text();
-    const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
-    const images = ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
-    res.json({ images });
-  } catch (err) {
-    console.error('Failed to fetch drive images', err);
-    res.json({ images: [] });
-  }
-});
+const server = http.createServer(async (req, res) => {
+  const parsed = url.parse(req.url, true);
 
-app.get('/frames', (req, res) => {
-  fs.readFile(saveFile, 'utf8', (err, data) => {
-    if (err) {
-      return res.json({ frameCount: 0, frames: [] });
+  if (req.method === 'GET' && parsed.pathname === '/local-images') {
+    fs.readdir(root, (err, files) => {
+      if (err) {
+        console.error('Failed to read directory', err);
+        return sendJson(res, { images: [] });
+      }
+      const images = files.filter(f => /\.png$/i.test(f)).map(f => '/' + f);
+      sendJson(res, { images });
+    });
+    return;
+  }
+
+  if (req.method === 'GET' && parsed.pathname === '/drive-images') {
+    const folderId = parsed.query.folderId;
+    if (!folderId) {
+      return sendJson(res, { message: 'Missing folderId' }, 400);
     }
     try {
-      res.json(JSON.parse(data));
-    } catch {
-      res.json({ frameCount: 0, frames: [] });
+      const response = await fetch(`https://drive.google.com/embeddedfolderview?id=${folderId}`);
+      const text = await response.text();
+      const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
+      const images = ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
+      sendJson(res, { images });
+    } catch (err) {
+      console.error('Failed to fetch drive images', err);
+      sendJson(res, { images: [] });
     }
-  });
+    return;
+  }
+
+  if (req.method === 'GET' && parsed.pathname === '/frames') {
+    fs.readFile(saveFile, 'utf8', (err, data) => {
+      let result;
+      if (err) {
+        result = { frameCount: 0, frames: [] };
+      } else {
+        try {
+          result = JSON.parse(data);
+        } catch {
+          result = { frameCount: 0, frames: [] };
+        }
+      }
+      sendJson(res, result);
+    });
+    return;
+  }
+
+  if (req.method === 'POST' && parsed.pathname === '/frames') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+    });
+    req.on('end', () => {
+      fs.writeFile(saveFile, body || '{}', err => {
+        if (err) {
+          console.error('Failed to save frames', err);
+          return sendJson(res, { message: 'Failed to save' }, 500);
+        }
+        sendJson(res, { status: 'ok' });
+      });
+    });
+    return;
+  }
+
+  // Static files
+  let filePath = path.join(root, parsed.pathname === '/' ? 'index.html' : parsed.pathname);
+  if (!filePath.startsWith(root)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
+  serveStatic(res, filePath);
 });
 
-app.post('/frames', (req, res) => {
-  fs.writeFile(saveFile, JSON.stringify(req.body || {}), err => {
-    if (err) {
-      console.error('Failed to save frames', err);
-      return res.status(500).json({ message: 'Failed to save' });
-    }
-    res.json({ status: 'ok' });
-  });
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
-
-app.listen(port, () => console.log(`Server listening on port ${port}`));

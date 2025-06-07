@@ -4,10 +4,9 @@ This small project renders a Matrix style "digital rain" animation on an HTML ca
 
 The page also includes movable frames. You can change a frame's title by clicking on it. Layout and titles are saved to `frames.json` on the server and restored when the page loads.
 
-To run the site with persistence enabled, install dependencies and start the server:
+To run the site with persistence enabled, start the built-in server:
 
 ```
-npm install
 npm start
 ```
 
