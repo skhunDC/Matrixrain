@@ -59,6 +59,7 @@ function drawLoaderMatrix() {
 }
 
 function updateProgress(percent) {
+    lastProgressTime = Date.now();
     progressBar.style.width = percent + '%';
     loaderText.textContent = `Loading... ${percent}%`;
 }
@@ -95,6 +96,8 @@ let drops;
 const speed = 80; // milliseconds - a bit faster
 let loaderInterval = setInterval(drawLoaderMatrix, speed);
 const minLoadingTime = 2000; // keep loader visible for at least 2s
+const progressDuration = 1000; // progress bar animation time
+let lastProgressTime = Date.now();
 // extra pixels to keep frame headers clickable when minimized
 const minimizePadding = 20;
 // Initialize drops based on current window size and update on resize
@@ -663,8 +666,14 @@ function runLoadingSequence() {
         const delay = Math.max(minLoadingTime - elapsed, 0);
         return new Promise(resolve => {
             setTimeout(() => {
-                hideLoader();
-                resolve();
+                if (parseInt(progressBar.style.width) < 100) {
+                    updateProgress(100);
+                }
+                const wait = Math.max(progressDuration - (Date.now() - lastProgressTime), 0);
+                setTimeout(() => {
+                    hideLoader();
+                    resolve();
+                }, wait);
             }, delay);
         });
     });
