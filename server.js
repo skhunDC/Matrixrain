@@ -50,24 +50,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && parsed.pathname === '/drive-images') {
-    const folderId = parsed.query.folderId;
-    if (!folderId) {
-      return sendJson(res, { message: 'Missing folderId' }, 400);
-    }
-    try {
-      const response = await fetch(`https://drive.google.com/embeddedfolderview?id=${folderId}`);
-      const text = await response.text();
-      const ids = Array.from(text.matchAll(/data-id="([^"]+)"/g)).map(m => m[1]);
-      const images = ids.map(id => `https://drive.google.com/uc?export=view&id=${id}`);
-      sendJson(res, { images });
-    } catch (err) {
-      console.error('Failed to fetch drive images', err);
-      sendJson(res, { images: [] });
-    }
-    return;
-  }
-
   if (req.method === 'GET' && parsed.pathname === '/frames') {
     fs.readFile(saveFile, 'utf8', (err, data) => {
       let result;

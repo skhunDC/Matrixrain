@@ -585,17 +585,6 @@ function setupSpreadsheet(content) {
     }, true);
 }
 
-function loadDriveImages(folderId) {
-    const url = `/drive-images?folderId=${folderId}`;
-    return fetch(url)
-        .then(r => r.json())
-        .then(data => data.images || [])
-        .catch(err => {
-            console.error('Failed to load drive images', err);
-            return [];
-        });
-}
-
 function loadLocalImages() {
     return fetch('/local-images')
         .then(r => r.json())
