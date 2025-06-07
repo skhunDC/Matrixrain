@@ -11,4 +11,10 @@ npm install
 npm start
 ```
 
+You can run a small sanity test with:
+
+```
+npm test
+```
+
 Open `http://localhost:3000` in your browser to see the matrix rain animation. Frames can be moved, resized, minimized with the green underscore, and removed with the red **X** in their corner. When removing a frame you will be asked to confirm the deletion. Layout is saved server side so it persists across browsers.
