@@ -11,9 +11,6 @@ const imagesDir = path.join(publicDir, 'images');
 app.use(express.json());
 app.use(express.static(publicDir));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 app.get('/images', (req, res) => {
   fs.readdir(imagesDir, (err, files) => {
