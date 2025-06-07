@@ -582,18 +582,17 @@ function setupSpreadsheet(content) {
     }, true);
 }
 
-function loadDriveImages(folderId) {
-    const url = `/drive-images?folderId=${folderId}`;
-    return fetch(url)
+function loadLocalImages() {
+    return fetch('/images')
         .then(r => r.json())
         .then(data => data.images || [])
         .catch(err => {
-            console.error('Failed to load drive images', err);
+            console.error('Failed to load images', err);
             return [];
         });
 }
 
-function createCarouselFrame(folderId) {
+function createCarouselFrame() {
     const headerHeight = document.getElementById('header').offsetHeight;
     let id;
     if (availableNumbers.length > 0) {
@@ -615,7 +614,7 @@ function createCarouselFrame(folderId) {
     };
     const frame = createFrame(info);
     const inner = frame.querySelector('.carousel-inner');
-    loadDriveImages(folderId).then(urls => {
+    loadLocalImages().then(urls => {
         if (!urls.length) {
             inner.textContent = 'No images found';
             return;
@@ -684,7 +683,7 @@ addButton.addEventListener('click', () => {
 // start loading sequence and create carousel frame only if one isn't loaded
 runLoadingSequence().then(() => {
     if (!container.querySelector('.carousel')) {
-        createCarouselFrame('1jEnFkdH4tzxbqAB0TiBkb19TM6z5KVaJ');
+        createCarouselFrame();
     }
 });
 
